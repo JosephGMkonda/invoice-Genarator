@@ -1,0 +1,50 @@
+{% extends 'base.html'%}
+
+{% load crispy_forms_tags %}
+
+{% block content%}
+<div class="container">
+
+    <div class="container mt-4">
+    
+        
+            <div class="col-md-10">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                      <li class="breadcrumb-item"><a href="">Products</a></li>
+                      
+                    </ol>
+                  </nav>
+            </div>
+        
+           
+        </div>
+    </div>
+
+   
+    <div class="card">
+
+      <div class="card-body">
+        <form action="#" method="post">
+          
+            {% csrf_token %}
+        
+
+          {{form.as_p}} 
+
+        <input type="submit" value="Product" class="btn  btn-primary submit-btn">
+
+    </form>
+
+      </div>
+    </div>
+
+
+
+  
+</div>
+
+{% endblock %}
+
+
+    

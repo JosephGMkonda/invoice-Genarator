@@ -1,0 +1,42 @@
+{% extends 'base.html'%}
+
+{% load crispy_forms_tags %}
+
+{% block content%}
+<div class="container">
+
+    <div class="container mt-4">
+    
+        
+            <div class="col-md-10">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                      <a href="#" class="btn btn-primary">add product</a>
+                      
+                    </ol>
+                  </nav>
+            </div>
+        
+           
+        </div>
+    </div>
+
+   
+    <div class="card" style="width:40rem">
+
+      <div class="card-body">
+        <form action="#" method="post">
+          
+            {% csrf_token %}
+        
+
+          {{invoiceForm.as_p}} 
+
+        <input type="submit" value="Create Invoice" class="btn  btn-primary submit-btn">
+
+    </form>
+
+      </div>
+    </div>
+
+     {% endblock %}
