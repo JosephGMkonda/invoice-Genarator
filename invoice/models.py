@@ -7,6 +7,8 @@ from django.template.defaultfilters import slugify
 from uuid import uuid4
 
 
+
+
 class InvoiceDetails(models.Model):
     
 
@@ -65,15 +67,14 @@ class Product(models.Model):
     }
 
     title = models.CharField(null=True, blank=True,max_length = 250)
-    description = models.CharField(null=True, blank=True,max_length=500)
     quantity = models.IntegerField(null=True, blank=True)
     prince = models.FloatField(null=True, blank=True)
     Currency = models.CharField(choices=CURRENCY,default="K",max_length=100)
-    ordernumber = models.IntegerField(null=True, blank=True)
     order_date = models.DateField(null=True, blank=True)
 
     #Related Field
     invoice = models.ForeignKey(InvoiceDetails, blank=True, null=True, on_delete=models.CASCADE)
+    uniqueId = models.CharField(null=True, blank=True, max_length=100)
 
     
     def __str__(self):

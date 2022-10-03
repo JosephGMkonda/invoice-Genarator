@@ -10,10 +10,36 @@ from django.contrib.auth.models import User
 from django.contrib import auth
 from django.urls import resolve
 from django.template import loader
+from .models import Profile
+from .form import ProfileForm
 
 
 
 
+
+def ProfileView(request):
+    profile_form = ProfileForm()
+
+
+    if request.method == "POST":
+        profile_form = ProfileForm(request.POST)
+        if profile_form.is_valid():
+            Full_Name = profile_form.cleaned_data.get('Full_Name')
+            Address = profile_form.cleaned_data.get('Address')
+
+            profile = Profile.objects.get_or_create(Full_Name=Full_Name,Address=Address)
+
+            profile.save()
+
+            return redirect('login')
+
+    context = {
+        "profile_form":profile_form
+    }
+    return render (request, 'userauth/profile.html',context)
+
+        
+        
 
 class EmailValidationView(View):
     def post(self, request):
@@ -72,8 +98,6 @@ class RegistrationView(View):
 
     
         username = request.POST.get('username',"defaultValue")
-        first_name= request.POST.get('first_name',"defaultValue")
-        last_name = request.POST.get('last_name',"defaultValue")
         email = request.POST.get('email',"defaultValue")
         password = request.POST.get('password',"defaultValue")
 
@@ -83,10 +107,10 @@ class RegistrationView(View):
             if not User.objects.filter(email=email).exists():
                 if len(password) < 6:
                     return render(request, 'userauth/registration.html')
-            user = User.objects.create_user(username=username,first_name=first_name,last_name=last_name,email=email)
+            user = User.objects.create_user(username=username,email=email)
             user.set_password(password)
             user.save()
-            return render(request, 'userauth/registration.html')
+            return redirect('profile')
 
 
 

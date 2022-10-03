@@ -4,33 +4,38 @@
 
 {% block content%}
 <div class="container">
-
+  {% include 'partials/_message.html'%}
     <div class="container mt-4">
     
         
             <div class="col-md-10">
                 <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                      <a href="#" class="btn btn-primary">add product</a>
-                      
-                    </ol>
+                  <div class="row">
+                    <div class="col-2">
+                      <a href="{% url 'view-pdf-invoice' invoice.slug %}"><button class="btn btn-danger ">view invoice</button></a>
+                      </div>
+                    <div class="col">
+                      <button id="btnSubmit" class="btn btn-primary " type="submit">view pdf</button></div>
+                  </div>
                   </nav>
             </div>
         
            
         </div>
     </div>
-
-   
-    <div class="card" style="width:40rem">
+    
+   <div class="row">
+    
+    
+    <div class="card col-md-4 m-2" style="width:30rem">
 
       <div class="card-body">
         <form action="#" method="post">
           
             {% csrf_token %}
         
-
-          {{invoiceForm.as_p}} 
+            {{invoiceForm.as_p}} 
+          
 
         <input type="submit" value="Create Invoice" class="btn  btn-primary submit-btn">
 
@@ -38,5 +43,65 @@
 
       </div>
     </div>
+  
 
+
+    
+    <div class="card col-md-4 m-2" style="width:30rem">
+
+      <div class="card-body">
+        <form action="#" method="post">
+          
+            {% csrf_token %}
+        
+            {{productForm.as_p}} 
+          
+
+        <input type="submit" value="Add products" class="btn  btn-primary submit-btn">
+
+    </form>
+
+      </div>
+    </div>
+
+
+    <div class=" table-responsive">
+      <table class="table table-stripped table-sm">
+    
+        <thead>
+
+          <tr>
+            <th>Title </th>
+            <th>Quantity</th>
+            <th>Prince</th>
+            <th>Date</th>
+            <th>Invoice</th>
+            
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          {% for product in products %}
+        <tr>
+          <td>{{product.title}}</td>
+          <td>{{product.quantity}}</td>
+          <td>{{product.currency}} {{products.price}}</td>
+          <td>{{product.order_date}}</td>
+          <td>{{product.invoice.number}}</td>
+        </tr>
+          {% endfor %}
+
+        </tbody>
+        
+        
+
+
+      </table>
+
+    </div>
+  
+
+  </diV>
      {% endblock %}

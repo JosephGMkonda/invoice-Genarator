@@ -1,3 +1,4 @@
+from re import template
 from django.shortcuts import redirect, render,get_object_or_404
 from django.template import loader
 from django.template.loader import render_to_string
@@ -7,30 +8,44 @@ from .models import Product,InvoiceDetails
 from .form import addProductForms,addInvoiceForms
 from django.contrib import messages
 
+from django.http import FileResponse
+import io
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+from reportlab.lib.pagesizes import letter
+from django.template.loader import get_template
+from django.contrib.auth.decorators import login_required
+
+
+
 
 # Create your views here.
 
 
-def Home(request):
-    return render(request, 'invoice/index.html')
 
 
+# getting all invoices
+@login_required
 def InvoiceView(request):
     context = {}
     invoices = InvoiceDetails.objects.all()
     context['invoices'] = invoices
     return render(request, 'invoice/invoice.html')
 
+
+    # getting all products including the inviuce which they belong
+@login_required
 def ProductView(request):
     context = {}
-    product = Product.objects.all()
-    context ['product'] = product
+    products = Product.objects.all()
+    
+    context ['product'] = products
 
-    return render(request, 'invoice/product.html')
+    return render(request, 'invoice/product.html', context)
 
     # this view is for creating invoices 
     # creating blank invoice with Invoice number and Transaction Id for the invoice
-
+@login_required
 def createInvoice(request):
     number = "INVOICE-"+str(uuid4()).split('-')[4]
     TransactionId = str(uuid4()).split('-')[4]
@@ -43,7 +58,7 @@ def createInvoice(request):
 
 
 
-
+@login_required
 def biuldInvoice(request, slug):
 
     try:
@@ -53,8 +68,10 @@ def biuldInvoice(request, slug):
         return redirect("invoices")
 
 
-
+    # the object get all the product that are related to specific invoice 
+    # so that to make it easy to calculate total number of products on specific invoice
     products = Product.objects.filter(invoice=getInvoice)
+    
 
     context = {}
     context ['getInvoice'] = getInvoice
@@ -80,6 +97,8 @@ def biuldInvoice(request, slug):
 
             messages.success(request, "The product added succefully")
             return redirect('build_invoice', slug=slug)
+        elif invoiceForm.is_valid():
+            invoiceForm.save()
         else:
             context['productForm'] = productForm
             context['invoiceForm'] = invoiceForm
@@ -93,55 +112,92 @@ def biuldInvoice(request, slug):
 
     
 
+# The function caculate total invoices 
+@login_required
+def viewPDFInvoic(request, slug):
 
-
-
-# def productView(request):
-
-#     context = {}
-#     product = Product.objects.all()
-#     context['product'] = product
-
-#     if request.method == "GET":
-#         form = addProductForms()
-#         context['form'] = form
-
-#         return render(request,'invoice/product.html')
-
-#     if request.method == "POST":
-#         form = addProductForms()
-
-#         if form.is_valid():
-#             form = addProductForms(request.POST)
-#             form.save()
-#             return redirect('products')
-#         return render(request, 'invoice/product.html')
-
-# def addProduct(request):
+    try:
+        invoice = InvoiceDetails.objects.get(slug=slug)
     
-#     data = dict()
-#     if request.method == "POST":
-#         form = addProductForms(request.POST)
-#         if form.is_valid():
-#             title = form.cleaned_data.get('title')
-#             description = form.cleaned_data.get('description')
-#             quantity = form.cleaned_data.get('quantity')
-#             prince = form.cleaned_data.get('prince')
-#             Currency = form.cleaned_data.get('Currency')
-#             ordernumber = form.cleaned_data.get('ordernumber')
-#             order_date = form.cleaned_data.get('order_date')
+    except:
+        messages.error(request, 'Something went wrong')
+        return redirect('invoices')
 
-#             p, created = Product.objects.get_or_create(title=title,description=description,quantity=quantity,prince=prince,Currency=Currency,ordernumber=ordernumber,order_date=order_date)
-#             print(p)
-#             p.save()
-#             return redirect('products')
+    
+    products = Product.objects.filter(invoice=invoice)
+
+    
+    
+    invoiceCurrency = ''
+    invoiceTotal = 0.0
+    if len(products) > 0:
+        for x in products:
+            y = float(x.quantity) * float(x.price)
+            invoiceTotal += y
+            invoiceCurrency = x.currency
+
+
+
+    context = {}
+    context['invoice'] = invoice
+    context['products'] = products
+    
+    context['invoiceTotal'] = "{:.2f}".format(invoiceTotal)
+    context['invoiceCurrency'] = invoiceCurrency
+
+    return render(request, 'invoice/invoice-temp.html', context)
+# this function used to generate FDF
+@login_required
+def viewDocumentInvoice(request, slug):
+    
+    try:
+        invoice = InvoiceDetails.objects.get(slug=slug)
+    
+    except:
+        messages.error(request, 'Something went wrong')
+        return redirect('invoices')
+
+    
+    products = Product.objects.filter(invoice=invoice)
+
+    
+    
+    invoiceCurrency = ''
+    invoiceTotal = 0.0
+    if len(products) > 0:
+        for x in products:
+            y = float(x.quantity) * float(x.price)
+            invoiceTotal += y
+            invoiceCurrency = x.currency
+
     
 
-#     else:
-#         form = addProductForms()
+    context = {}
+    context['invoice'] = invoice
+    context['products'] = products
+    
+    context['invoiceTotal'] = "{:.2f}".format(invoiceTotal)
+    context['invoiceCurrency'] = invoiceCurrency
 
-#     context = {
-#         'form':form
-#     }
-#     return render(request, 'invoice/addProduct.html',context)
+    template = get_template("invoice/pdf-temp.html")
+
+    html = template.render(context)
+
+    buf = io.Bytes.IO()
+    c = canvas.Canvas(buf,pagesize=letter)
+    textob = c.beginText()
+    textob.TextLine(html)
+
+    c.drawText(textob)
+    c.showPage()
+    c.save()
+    buf.seek(0)
+
+    return FileResponse
+
+
+    
+
+
+
 

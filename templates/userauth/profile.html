@@ -1,0 +1,47 @@
+{% extends 'auth_base.html'%}
+
+{% load static %}
+
+{% block content%}
+
+<div class="row">
+    <div class="col-md-4"></div>
+    <div class="col-md-4">
+
+
+        <div class="card mt-5">
+
+         
+
+            <div class="card-body" >
+
+                <div class="card-title">
+
+                    <h4>Create Profile</h4>
+    
+                </div> 
+
+                <form action="{% url 'register'%}" method="post">
+                    {% csrf_token %} 
+                    
+
+                      {{profile_form.as_p}}
+                    
+
+                    <input type="submit" value="Post" class="btn  btn-primary submit-btn">
+
+                </form>
+
+            </div>
+            </div>
+        </div>
+
+
+    </div>
+    <div class="col-md-4"></div>
+    
+</div>
+
+<script src="{% static 'js/register.js'%}"></script>
+
+{% endblock%}
